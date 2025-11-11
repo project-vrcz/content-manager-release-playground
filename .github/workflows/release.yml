@@ -158,7 +158,7 @@ jobs:
           git push --tags
           # create main branch from releasing branch and fetch
           git switch -c $ACTION_REF
-          git push
+          git push -u origin $ACTION_REF
 
       - name: Make Release
         env:
