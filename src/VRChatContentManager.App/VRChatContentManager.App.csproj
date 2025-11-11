@@ -16,7 +16,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <AvaloniaResource Include="Assets\**"/>
+        <AvaloniaResource Include="Assets\**" />
     </ItemGroup>
 
     <ItemGroup>
@@ -24,11 +24,13 @@
         <PackageReference Include="Avalonia.Desktop" Version="11.3.8" />
         <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.8" />
         <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.8" />
-        <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
-<!--        <PackageReference Include="Avalonia.Diagnostics" Version="11.3.6">-->
-<!--            <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>-->
-<!--            <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>-->
-<!--        </PackageReference>-->
+        <!--Condition
+        below is needed to remove Avalonia.Diagnostics package from build output in Release
+        configuration.-->
+        <!--        <PackageReference Include="Avalonia.Diagnostics" Version="11.3.6">-->
+        <!--            <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>-->
+        <!--            <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>-->
+        <!--        </PackageReference>-->
         <PackageReference Include="AvaloniaUI.DiagnosticsSupport" Version="2.1.0" />
         <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
         <PackageReference Include="DialogHost.Avalonia" Version="0.9.3" />
@@ -59,22 +61,21 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\VRChatContentManager.Core\VRChatContentManager.Core.csproj" />
+        <ProjectReference Include="..\VRChatContentManager.Core\VRChatContentManager.Core.csproj" />
     </ItemGroup>
 
     <ItemGroup>
         <!-- Preserve Avalonia types for reflection -->
-        <TrimmerRootAssembly Include="Avalonia.Controls"/>
+        <TrimmerRootAssembly Include="Avalonia.Controls" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Compile Update="Views\Data\PublishTasks\PublishTaskManagerView.axaml.cs">
-        <DependentUpon>TaskManagerView.axaml</DependentUpon>
-        <SubType>Code</SubType>
-      </Compile>
-      <Compile Update="Pages\AddAccountPage.axaml.cs">
-        <DependentUpon>AddAccountPage.axaml</DependentUpon>
-        <SubType>Code</SubType>
-      </Compile>
-    </ItemGroup>
+    <Target Name="SetSourceRevisionId" BeforeTargets="InitializeSourceControlInformation">
+        <Exec
+            Command="git describe --always --dirty --exclude=* --abbrev=0"
+            ConsoleToMSBuild="True"
+            IgnoreExitCode="False"
+        >
+            <Output PropertyName="SourceRevisionId" TaskParameter="ConsoleOutput" />
+        </Exec>
+    </Target>
 </Project>
