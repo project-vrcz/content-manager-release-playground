@@ -165,6 +165,7 @@ jobs:
           RELEASE_VERSION: ${{ inputs.new-version }}
           PATH_TO_NOTES: ${{ env.note_path }}/${{ env.release_note_file_name }}
           PATH_TO_RELEASE_ASSETS: ${{ env.assets_path }}
+          GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           gh release create \
