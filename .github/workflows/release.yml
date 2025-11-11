@@ -1,0 +1,171 @@
+name: Release
+
+concurrency:
+  group: releasing
+
+on:
+  workflow_dispatch:
+    inputs:
+      pre-release:
+        type: boolean
+        required: true
+        description: Is Pre-release
+        default: true
+      new-version:
+        required: true
+        description: Version to Release, e.g 1.0.0
+        type: string
+
+env:
+  releasing_branch: releasing
+  changelog_artifact_name: changelog
+  release_note_artifact_name: release-note
+  release_note_file_name: release-note
+  assets_to_release_artifact_pattern: vrchat-content-manager-app-*
+  release_git_tag: v${{ inputs.new-version }}
+
+jobs:
+  update-changelog:
+    permissions:
+      contents: write
+
+    runs-on: ubuntu-latest
+
+    outputs:
+      changelog-artifact-id: ${{ steps.upload-changelog.outputs.artifact-id }}
+      release-note-artifact-id: ${{ steps.upload-release-note.outputs.artifact-id }}
+    
+    env:
+      repo_dir: ${{ github.workspace }}/repo
+      path_to_release_note: ${{ github.workspace }}/release-note
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          path: ${{ env.repo_dir }}
+          submodules: recursive
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Extact Release Note and Update Changelog
+        if: ${{ !inputs.pre-release }}
+        working-directory: ${{ env.repo_dir }}
+        env:
+          NEW_VERSION: ${{ inputs.new-version }}
+          RELEASE_NOTE_PATH: ${{ env.path_to_release_note }}
+        run: dotnet run dev/scripts/release-changelog.cs -- CHANGELOG.md $NEW_VERSION --print-changes-to-stdout > $RELEASE_NOTE_PATH
+
+      - name: Extact Release Note Only
+        if: ${{ inputs.pre-release }}
+        working-directory: ${{ env.repo_dir }}
+        env:
+          NEW_VERSION: ${{ inputs.new-version }}
+          RELEASE_NOTE_PATH: ${{ env.path_to_release_note }}
+        run: dotnet run dev/scripts/release-changelog.cs -- CHANGELOG.md $NEW_VERSION --print-changes-to-stdout --dry-run > $RELEASE_NOTE_PATH
+
+      - name: Upload CHANGELOG.md
+        id: upload-changelog
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.changelog_artifact_name }}
+          path: ${{ env.repo_dir }}/CHANGELOG.md
+
+      - name: Upload Release Note
+        id: upload-release-note
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.release_note_artifact_name }}
+          path: ${{ env.path_to_release_note }}
+
+      - name: Commit and Push
+        working-directory: ${{ env.repo_dir }}
+        env:
+          NEW_VERSION: ${{ inputs.new-version }}
+          RELEASING_BRANCH: ${{ env.releasing_branch }}
+        run: |
+          # create release commit, push it, and create relreasing branch
+          git switch -c $RELEASING_BRANCH
+          git commit -am "chore: release $NEW_VERSION"
+          git push -f -u origin releasing
+
+  build:
+    needs: update-changelog
+    uses: ./.github/workflows/build.yml
+    with:
+      ref: releasing
+
+  create-release:
+    needs: [update-changelog, build]
+    runs-on: ubuntu-latest
+
+    env:
+      repo_dir: ${{ github.workspace }}/repo
+      assets_path: ${{ github.workspace }}/assets
+      note_path: ${{ github.workspace }}/note
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          path: ${{ env.repo_dir }}
+          ref: ${{ env.releasing_branch }}
+
+      - name: Download Artifact
+        uses: actions/download-artifact@v5
+        with:
+          path: ${{ env.assets_path }}
+          pattern: ${{ env.assets_to_release_artifact_pattern }}
+          merge-multiple: true
+
+      - name: Download Release Note
+        uses: actions/download-artifact@v5
+        with:
+          artifact-ids: ${{ needs.update-changelog.outputs.release-note-artifact-id }}
+          path: ${{ env.note_path }}
+
+      - name: Push Tag
+        working-directory: ${{ env.repo_dir }}
+        env:
+          GIT_TAG: ${{ env.release_git_tag }}
+          RELEASING_REF: ${{ env.releasing_branch }}
+          ACTION_REF: ${{ github.ref_name }}
+        run: |
+          git tag $GIT_TAG
+          git push --tags
+          git switch $ACTION_REF
+          git merge $RELEASING_REF
+          git push
+
+      - name: Make Release
+        env:
+          RELEASE_VERSION: ${{ inputs.new-version }}
+          PATH_TO_NOTES: ${{ env.note_path }}/${{ env.release_note_file_name }}
+          PATH_TO_RELEASE_ASSETS: ${{ env.assets_path }}
+        run: |
+          gh release create \
+          --notes-file $PATH_TO_NOTES \
+          --verify-tag \
+          --fail-on-no-commits \
+          v$RELEASE_VERSION \
+          $PATH_TO_RELEASE_ASSETS/*
+
+  cleanup:
+    if: ${{ !failure() && !cancelled() }}
+    permissions:
+      contents: write
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ env.releasing_branch }}
+          fetch-depth: 2
+
+      - name: Delete Releasing Branch
+        run: git push --delete origin releasing

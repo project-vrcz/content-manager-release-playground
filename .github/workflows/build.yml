@@ -1,5 +1,11 @@
 name: Build
 on:
+  workflow_call:
+    inputs:
+      ref:
+        type: string
+        description: git ref to build
+        default: ${{ github.ref_name }}
   push:
   pull_request:
 
@@ -14,15 +20,16 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     env:
-      REPO_DIR: ${{ github.workspace }}/repo
-      SRC_DIR: ${{ github.workspace }}/repo/src
-      OUTPUT_DIR: ${{ github.workspace }}/output
+      repo_dir: ${{ github.workspace }}/repo
+      src_dir: ${{ github.workspace }}/repo/src
+      output_dir: ${{ github.workspace }}/output
 
     steps:
       - name: Checkout
         uses: actions/checkout@v5
         with:
-          path: ${{ env.REPO_DIR }}
+          ref: ${{ inputs.ref }}
+          path: ${{ env.repo_dir }}
           submodules: recursive
 
       - name: Setup .NET SDK
@@ -31,19 +38,22 @@ jobs:
           dotnet-version: "10.0.x"
 
       - name: Build
-        run: dotnet publish -c Release VRChatContentManager.App -r ${{ matrix.rid }} -o ${{ env.OUTPUT_DIR }}
-        working-directory: ${{ env.SRC_DIR }}
+        env:
+          RID: ${{ matrix.rid }}
+          OUTPUT_DIR: ${{ env.output_dir }}
+        run: dotnet publish -c Release VRChatContentManager.App -r $RID -o $OUTPUT_DIR
+        working-directory: ${{ env.src_dir }}
 
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: vrchat-content-manager-app-${{ matrix.rid }}
           path: |
-            ${{ env.OUTPUT_DIR }}
-            !${{ env.OUTPUT_DIR }}/**/*.pdb
+            ${{ env.output_dir }}
+            !${{ env.output_dir }}/**/*.pdb
 
       - name: Upload PDB
         uses: actions/upload-artifact@v4
         with:
           name: vrchat-content-manager-app-${{ matrix.rid }}-pdb
-          path: ${{ env.OUTPUT_DIR }}/**/*.pdb
+          path: ${{ env.output_dir }}/**/*.pdb
