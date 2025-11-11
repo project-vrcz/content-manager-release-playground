@@ -9,7 +9,7 @@
         <LangVersion>preview</LangVersion>
         <IsAotCompatible>true</IsAotCompatible>
         <ApplicationIcon>Assets/AppIcon.ico</ApplicationIcon>
-        <Version>2.0.0</Version>
+        <Version>0.3.0-beta.1</Version>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)'!='Debug'">
