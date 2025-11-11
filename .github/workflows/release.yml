@@ -61,6 +61,7 @@ jobs:
           NEW_VERSION: ${{ inputs.new-version }}
           RELEASE_NOTE_PATH: ${{ env.path_to_release_note }}
         run: dotnet run dev/scripts/release-changelog.cs -- CHANGELOG.md $NEW_VERSION --print-changes-to-stdout > $RELEASE_NOTE_PATH
+        shell: bash
 
       - name: Extact Release Note Only
         if: ${{ inputs.pre-release }}
@@ -69,6 +70,7 @@ jobs:
           NEW_VERSION: ${{ inputs.new-version }}
           RELEASE_NOTE_PATH: ${{ env.path_to_release_note }}
         run: dotnet run dev/scripts/release-changelog.cs -- CHANGELOG.md $NEW_VERSION --print-changes-to-stdout --dry-run > $RELEASE_NOTE_PATH
+        shell: bash
 
       - name: Upload CHANGELOG.md
         id: upload-changelog
@@ -89,6 +91,7 @@ jobs:
         env:
           NEW_VERSION: ${{ inputs.new-version }}
           RELEASING_BRANCH: ${{ env.releasing_branch }}
+        shell: bash
         run: |
           # create release commit, push it, and create relreasing branch
           git switch -c $RELEASING_BRANCH
@@ -139,6 +142,7 @@ jobs:
           GIT_TAG: ${{ env.release_git_tag }}
           RELEASING_REF: ${{ env.releasing_branch }}
           ACTION_REF: ${{ github.ref_name }}
+        shell: bash
         run: |
           git tag $GIT_TAG
           git push --tags
@@ -151,6 +155,7 @@ jobs:
           RELEASE_VERSION: ${{ inputs.new-version }}
           PATH_TO_NOTES: ${{ env.note_path }}/${{ env.release_note_file_name }}
           PATH_TO_RELEASE_ASSETS: ${{ env.assets_path }}
+        shell: bash
         run: |
           gh release create \
           --notes-file $PATH_TO_NOTES \
@@ -178,4 +183,7 @@ jobs:
         uses: snow-actions/git-config-user@84b24d833b169b1a874be9fae7a7128a57babba2
 
       - name: Delete Releasing Branch
-        run: git push --delete origin releasing
+        env:
+          BRANCH_TO_DELETE: ${{ env.releasing_branch }}
+        shell: bash
+        run: git push --delete $BRANCH_TO_DELETE 
