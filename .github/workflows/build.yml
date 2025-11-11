@@ -40,8 +40,8 @@ jobs:
       - name: Build
         env:
           RID: ${{ matrix.rid }}
-          OUTPUT_DIR: ${{ env.output_dir }}
-        run: dotnet publish -c Release VRChatContentManager.App -r $RID -o $OUTPUT_DIR
+          BUILD_OUTPUT_DIR: ${{ env.output_dir }}
+        run: dotnet publish -c Release VRChatContentManager.App -r "$RID" -o "$BUILD_OUTPUT_DIR"
         working-directory: ${{ env.src_dir }}
 
       - name: Upload Build Artifacts
