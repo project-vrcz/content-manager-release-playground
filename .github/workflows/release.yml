@@ -185,6 +185,7 @@ jobs:
         working-directory: ${{ env.repo_dir }}
         run: |
           gh release create \
+          ${{ inputs.pre-release && '--prerelease' || '' }} \
           --notes-file $PATH_TO_NOTES \
           --verify-tag \
           --fail-on-no-commits \
@@ -205,6 +206,7 @@ jobs:
         uses: actions/checkout@v5
         with:
           ref: ${{ env.releasing_branch }}
+          fetch-depth: 2
 
       - name: Setup Git User
         run: |
@@ -215,4 +217,4 @@ jobs:
         env:
           BRANCH_TO_DELETE: ${{ env.releasing_branch }}
         shell: bash
-        run: git push --delete $BRANCH_TO_DELETE
+        run: git push --delete origin $BRANCH_TO_DELETE
