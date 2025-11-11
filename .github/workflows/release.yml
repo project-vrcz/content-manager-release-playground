@@ -34,7 +34,7 @@ jobs:
     outputs:
       changelog-artifact-id: ${{ steps.upload-changelog.outputs.artifact-id }}
       release-note-artifact-id: ${{ steps.upload-release-note.outputs.artifact-id }}
-    
+
     env:
       repo_dir: ${{ github.workspace }}/repo
       path_to_release_note: ${{ github.workspace }}/release-note
@@ -45,6 +45,9 @@ jobs:
         with:
           path: ${{ env.repo_dir }}
           submodules: recursive
+
+      - name: Setup Git User
+        uses: snow-actions/git-config-user@84b24d833b169b1a874be9fae7a7128a57babba2
 
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v5
@@ -114,6 +117,9 @@ jobs:
           path: ${{ env.repo_dir }}
           ref: ${{ env.releasing_branch }}
 
+      - name: Setup Git User
+        uses: snow-actions/git-config-user@84b24d833b169b1a874be9fae7a7128a57babba2
+
       - name: Download Artifact
         uses: actions/download-artifact@v5
         with:
@@ -167,6 +173,9 @@ jobs:
         with:
           ref: ${{ env.releasing_branch }}
           fetch-depth: 2
+
+      - name: Setup Git User
+        uses: snow-actions/git-config-user@84b24d833b169b1a874be9fae7a7128a57babba2
 
       - name: Delete Releasing Branch
         run: git push --delete origin releasing
