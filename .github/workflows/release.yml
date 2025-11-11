@@ -167,6 +167,7 @@ jobs:
           PATH_TO_RELEASE_ASSETS: ${{ env.assets_path }}
           GH_TOKEN: ${{ github.token }}
         shell: bash
+        working-directory: ${{ env.repo_dir }}
         run: |
           gh release create \
           --notes-file $PATH_TO_NOTES \
