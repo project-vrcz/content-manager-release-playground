@@ -8,7 +8,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 test
 
+## [0.3.0-rc.1] - 2025-11-11
+
+test
+
 ## [0.2.0] - 2025-11-11
 
-[unreleased]: https://github.com/olivierlacan/keep-a-changelog/compare/v0.2.0...HEAD
+[unreleased]: https://github.com/olivierlacan/keep-a-changelog/compare/v0.3.0-rc.1...HEAD
+[0.3.0-rc.1]: https://github.com/olivierlacan/keep-a-changelog/compare/v0.2.0...v0.3.0-rc.1
 [0.2.0]: https://github.com/olivierlacan/keep-a-changelog/releases/tag/v0.2.0
