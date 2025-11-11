@@ -117,6 +117,7 @@ jobs:
     env:
       repo_dir: ${{ github.workspace }}/repo
       assets_path: ${{ github.workspace }}/assets
+      artifact_download_path: ${{ github.workspace }}/artifact-download
       note_path: ${{ github.workspace }}/note
 
     steps:
@@ -136,9 +137,22 @@ jobs:
       - name: Download Artifact
         uses: actions/download-artifact@v5
         with:
-          path: ${{ env.assets_path }}
+          path: ${{ env.artifact_download_path }}
           pattern: ${{ env.assets_to_release_artifact_pattern }}
-          merge-multiple: true
+
+      - name: Create release ZIPs
+        env:
+          ARTIFACT_PATH: ${{ env.artifact_download_path }}
+          OUTPUT_PATH: ${{ env.assets_path }}
+        run: |
+          set -eux
+          cd $ARTIFACT_PATH
+
+          for f in vrchat-content-manager-app-*; do
+            [ -e "$f" ] || continue
+            zip -r "$OUTPUT_PATH/${f}.zip" "$f"
+          done
+        shell: bash
 
       - name: Download Release Note
         uses: actions/download-artifact@v5
