@@ -154,6 +154,7 @@ jobs:
           $PATH_TO_RELEASE_ASSETS/*
 
   cleanup:
+    needs: [update-changelog, build, create-release]
     if: ${{ !failure() && !cancelled() }}
     permissions:
       contents: write
