@@ -57,6 +57,13 @@ jobs:
         with:
           dotnet-version: "10.0.x"
 
+      - name: Update Version in .csproj
+        uses: vers-one/dotnet-project-version-updater@6d4de57b8f089d58a00b6ede1f3f05c77bb8e541
+        with:
+          tags: csproj.Version
+          version: ${{ inputs.new-version}}
+          file: ${{ env.repo_dir }}/src/VRChatContentManager.App/VRChatContentManager.App.csproj
+
       - name: Extact Release Note and Update Changelog
         if: ${{ !inputs.pre-release }}
         working-directory: ${{ env.repo_dir }}
