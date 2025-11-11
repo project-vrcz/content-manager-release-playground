@@ -18,6 +18,12 @@ var newVersionArgument = new Argument<string>("new-version")
     Description = "Version to release"
 };
 
+var keepUnreleasedChangesOption = new Option<bool>("--keep-unreleased-changes")
+{
+    Description = "Keep unreleased changes in the changelog",
+    DefaultValueFactory = _ => false
+};
+
 var printChangesToStdOption = new Option<bool>("--print-changes-to-stdout")
 {
     Description = "Print result to stdout",
@@ -35,12 +41,14 @@ rootCommand.Arguments.Add(pathToChangeLogArgument);
 rootCommand.Arguments.Add(newVersionArgument);
 rootCommand.Options.Add(printChangesToStdOption);
 rootCommand.Options.Add(dryRunOption);
+rootCommand.Options.Add(keepUnreleasedChangesOption);
 
 rootCommand.SetAction(async parseResult =>
 {
     var changeLogFileInfo = parseResult.GetValue(pathToChangeLogArgument) ?? throw new Exception("path-to-change-log-file file info is null");
     var newVersion = parseResult.GetValue(newVersionArgument) ?? throw new Exception("new-version is null");
     var printChangesToStd = parseResult.GetValue(printChangesToStdOption);
+    var keepUnreleasedChanges = parseResult.GetValue(keepUnreleasedChangesOption);
     var dryRun = parseResult.GetValue(dryRunOption);
 
     var changeLogFileName = changeLogFileInfo.FullName;
@@ -54,6 +62,12 @@ rootCommand.SetAction(async parseResult =>
 
     changeLogRaw = UpdateReleasesLink(changeLogRaw, newVersion, githubRepoUrl);
     changeLogRaw = InsertNewVersionHeading(changeLogRaw, newVersion, date);
+
+    if (keepUnreleasedChanges)
+    {
+        var unreleasedHeadingEndIndex = GetUnreleasedHeadingEndIndex(changeLogRaw);
+        changeLogRaw = changeLogRaw.Insert(unreleasedHeadingEndIndex, $"\n\n{changes}");
+    }
 
     if (printChangesToStd)
         Console.Write(changes);
