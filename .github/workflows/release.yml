@@ -47,7 +47,9 @@ jobs:
           submodules: recursive
 
       - name: Setup Git User
-        uses: snow-actions/git-config-user@84b24d833b169b1a874be9fae7a7128a57babba2
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
 
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v5
@@ -121,7 +123,9 @@ jobs:
           ref: ${{ env.releasing_branch }}
 
       - name: Setup Git User
-        uses: snow-actions/git-config-user@84b24d833b169b1a874be9fae7a7128a57babba2
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
 
       - name: Download Artifact
         uses: actions/download-artifact@v5
@@ -180,7 +184,9 @@ jobs:
           fetch-depth: 2
 
       - name: Setup Git User
-        uses: snow-actions/git-config-user@84b24d833b169b1a874be9fae7a7128a57babba2
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
 
       - name: Delete Releasing Branch
         env:
