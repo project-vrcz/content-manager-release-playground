@@ -47,6 +47,7 @@ jobs:
           submodules: recursive
 
       - name: Setup Git User
+        working-directory: ${{ env.repo_dir }}
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
@@ -123,6 +124,7 @@ jobs:
           ref: ${{ env.releasing_branch }}
 
       - name: Setup Git User
+        working-directory: ${{ env.repo_dir }}
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
