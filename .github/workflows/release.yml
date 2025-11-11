@@ -146,6 +146,7 @@ jobs:
           OUTPUT_PATH: ${{ env.assets_path }}
         run: |
           set -eux
+          mkdir OUTPUT_PATH
           cd $ARTIFACT_PATH
 
           for f in vrchat-content-manager-app-*; do
