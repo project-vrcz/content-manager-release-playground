@@ -111,6 +111,9 @@ jobs:
     needs: [update-changelog, build]
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: write
+
     env:
       repo_dir: ${{ github.workspace }}/repo
       assets_path: ${{ github.workspace }}/assets
